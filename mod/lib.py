@@ -320,8 +320,123 @@ class File:
 
         return _encoding  
         
+   
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+############################# // AER box class // #############################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class AERBox:
+   
+    def __init__(self, index_tpl=None, dimens_tpl=None, plain_kind=None):
+        self.index_tpl  = index_tpl
+        self.dimens_tpl = dimens_tpl
+        self.kind       = plain_kind
         
         
+    def get_box_dimensioning(A_0, B_0, C_0, A_1, N_I, N_J, N_K):
+        
+        # length in x-direction
+        a = abs(B_0[0] - A_0[0])/N_I
+        # length in y-direction
+        b = abs(C_0[1] - A_0[1])/N_J
+        # length in z-direction
+        c = abs(A_1[2]- A_0[2])/N_K
+        
+        return a, b, c
+        
+        
+    
+    def getPlainMidpoint(self):
+    
+        a = self.dimens_tpl[0]
+        b = self.dimens_tpl[1]
+        c = self.dimens_tpl[2]
+        
+        i = self.index_tpl[0]
+        j = self.index_tpl[1]
+        k = self.index_tpl[2]
+    
+    
+        '''
+                    left
+                 _________
+                |         |          AER Box sight from up to down
+                |         |
+                |         |
+          inlet |         | outlet
+                |         | b        y
+                |         |          |  
+                |         |          |
+                |_________|          |_____x
+        
+                    right
+                    a
+        '''
+
+                                
+        if self.kind == 'inlet':
+            vert = [(i*a), (j*b + b/2), (k*c + c/2)]  
+            return vert
+    
+                
+        if self.kind == 'outlet':
+            vert = [(i*a + a), (j*b + b/2), (k*c + c/2)]           
+            return vert
+            
+            
+        if self.kind == 'left':
+            vert = [(i*a + a/2), (j*b), (k*c + c/2)]           
+            return vert
+            
+            
+        if self.kind == 'right':
+            vert = [(i*a + a/2), (j*b + b), (k*c + c/2)]            
+            return vert           
+
+
+        if self.kind == 'top':
+            vert = [(i*a + a/2), (j*b + b/2), (k*c + c)]            
+            return vert 
+
+
+        if self.kind == 'bottom':
+            vert = [(i*a + a/2), (j*b + b/2), (k*c)]  
+            return vert 
+
+
+
+    
+    
+    #----------------------------------------------------------------------
+    
+    def getPlainNormal(self):    
+        '''
+        This method returns the corresponding normal vector of the plane
+        object.            
+        '''
+    
+        mode      = 'forward'
+        rot_matrx = transfMatrix(mode)
+    
+        if self.kind == 'inlet':        
+            return np.dot(rot_matrx, np.array([1, 0, 0]))
+                
+        if self.kind == 'outlet':
+            return np.dot(rot_matrx, np.array([-1, 0, 0]))
+    
+        if self.kind == 'right':
+            return np.dot(rot_matrx, np.array([0, -1, 0]))
+    
+        if self.kind == 'left':
+            return np.dot(rot_matrx, np.array([0, 1, 0]))
+    
+        if self.kind == 'top':
+            return np.dot(rot_matrx, np.array([0, 0, 1]))
+    
+        if self.kind == 'bottom':
+            return np.dot(rot_matrx, np.array([0, 0, -1]))
+    
+   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ############################## // Line class // ###############################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
